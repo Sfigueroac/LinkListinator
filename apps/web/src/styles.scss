@@ -1,0 +1,47 @@
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      theme-type: light,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+:root {
+  --brand-color: #1565c0;
+  --brand-color-light: #e3f2fd;
+  --text-secondary: rgba(0, 0, 0, 0.55);
+  --card-radius: 12px;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background-color: #f0f4f8;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-card {
+  border-radius: var(--card-radius) !important;
+  box-shadow: var(--shadow-card) !important;
+}

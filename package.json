@@ -1,0 +1,13 @@
+{
+  "name": "linklistinator",
+  "version": "1.0.0",
+  "description": "Link collection and management application",
+  "scripts": {
+    "install:all": "npm install && cd apps/api && npm install && cd ../web && npm install && cd ../..",
+    "dev": "npm run api:dev & npm run web:dev",
+    "api:dev": "cd apps/api && npm run start:dev",
+    "web:dev": "cd apps/web && npm start",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down"
+  }
+}
