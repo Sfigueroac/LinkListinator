@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LinksService } from '../../../core/services/links.service';
 
 export interface LinkFormData {
@@ -23,6 +24,7 @@ export interface LinkFormData {
     MatButtonModule,
     MatChipsModule,
     MatIconModule,
+    MatProgressSpinnerModule,
   ],
   template: `
     <h2 mat-dialog-title>Añadir link</h2>
@@ -31,7 +33,10 @@ export interface LinkFormData {
       <form [formGroup]="form" id="linkForm">
         <mat-form-field class="full-width">
           <mat-label>URL</mat-label>
-          <input matInput formControlName="url" placeholder="https://..." />
+          <input matInput formControlName="url" placeholder="https://..." (blur)="onUrlBlur()" />
+          @if (fetchingMeta()) {
+            <mat-spinner matSuffix diameter="18" />
+          }
         </mat-form-field>
 
         <mat-form-field class="full-width">
@@ -87,6 +92,7 @@ export class LinkFormComponent implements OnInit {
   separatorKeys = [ENTER, COMMA];
   tags = signal<string[]>([]);
   loading = signal(false);
+  fetchingMeta = signal(false);
 
   form = this.fb.group({
     url: ['', [Validators.required]],
@@ -97,6 +103,26 @@ export class LinkFormComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: LinkFormData) {}
 
   ngOnInit() {}
+
+  onUrlBlur() {
+    const url = this.form.get('url')?.value?.trim();
+    if (!url) return;
+    try { new URL(url); } catch { return; }
+
+    const titleEmpty = !this.form.get('title')?.value?.trim();
+    const descEmpty = !this.form.get('description')?.value?.trim();
+    if (!titleEmpty && !descEmpty) return;
+
+    this.fetchingMeta.set(true);
+    this.linksService.fetchMeta(url).subscribe({
+      next: (meta) => {
+        if (titleEmpty && meta.title) this.form.patchValue({ title: meta.title });
+        if (descEmpty && meta.description) this.form.patchValue({ description: meta.description });
+        this.fetchingMeta.set(false);
+      },
+      error: () => this.fetchingMeta.set(false),
+    });
+  }
 
   addTag(event: MatChipInputEvent) {
     const value = (event.value || '').trim().toLowerCase();

@@ -16,6 +16,10 @@ export declare class LinksService {
     search(tag: string): Promise<Link[]>;
     create(ownerId: string, dto: CreateLinkDto): Promise<Link>;
     update(id: string, ownerId: string, dto: UpdateLinkDto): Promise<Link>;
+    fetchMeta(url: string): Promise<{
+        title: string;
+        description: string;
+    }>;
     remove(id: string, ownerId: string): Promise<{
         deleted: boolean;
     }>;

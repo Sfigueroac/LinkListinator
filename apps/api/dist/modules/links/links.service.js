@@ -84,6 +84,25 @@ let LinksService = class LinksService {
         });
         return this.repo.save(link);
     }
+    async fetchMeta(url) {
+        try {
+            const res = await fetch(url, {
+                signal: AbortSignal.timeout(5000),
+                headers: { 'User-Agent': 'Mozilla/5.0' },
+            });
+            const html = await res.text();
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) ??
+                html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+            return {
+                title: titleMatch?.[1]?.trim() ?? '',
+                description: descMatch?.[1]?.trim() ?? '',
+            };
+        }
+        catch {
+            return { title: '', description: '' };
+        }
+    }
     async remove(id, ownerId) {
         const link = await this.repo.findOne({
             where: { id },

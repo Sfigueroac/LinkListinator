@@ -40,6 +40,11 @@ export class LinksController {
     return this.linksService.search(tag ?? '');
   }
 
+  @Get('meta')
+  fetchMeta(@Query('url') url: string) {
+    return this.linksService.fetchMeta(url ?? '');
+  }
+
   @Post()
   create(@CurrentUser() user: { id: string }, @Body() dto: CreateLinkDto) {
     return this.linksService.create(user.id, dto);
