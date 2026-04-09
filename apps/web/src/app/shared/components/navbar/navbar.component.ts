@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -15,12 +16,22 @@ import { AuthService } from '../../../core/services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    MatInputModule,
   ],
   template: `
     <mat-toolbar color="primary">
       <a routerLink="/explore" class="brand">Linky</a>
 
       <span class="spacer"></span>
+
+      @if (auth.currentUser()) {
+        <div class="search-wrap">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input class="search-input" placeholder="Buscar links..."
+            #searchInput
+            (keydown.enter)="search(searchInput.value)" />
+        </div>
+      }
 
       <a mat-button routerLink="/explore" routerLinkActive="active-link">Explorar</a>
 
@@ -53,6 +64,24 @@ import { AuthService } from '../../../core/services/auth.service';
       letter-spacing: -0.5px;
     }
     .spacer { flex: 1; }
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 2px 12px;
+      margin-right: 8px;
+    }
+    .search-icon { font-size: 18px; width: 18px; height: 18px; color: rgba(255,255,255,0.8); margin-right: 6px; }
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: white;
+      font-size: 0.9rem;
+      width: 180px;
+      &::placeholder { color: rgba(255,255,255,0.6); }
+    }
     .active-link { opacity: 0.7; }
     .menu-header {
       padding: 8px 16px;
@@ -65,4 +94,9 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent {
   auth = inject(AuthService);
+  private router = inject(Router);
+
+  search(q: string) {
+    if (q.trim()) this.router.navigate(['/search'], { queryParams: { q: q.trim() } });
+  }
 }

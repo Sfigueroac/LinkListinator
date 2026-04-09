@@ -45,6 +45,10 @@ import { Link } from '../../../core/models/link.model';
           <mat-icon>open_in_new</mat-icon>
         </a>
         @if (showDelete) {
+          <button mat-icon-button (click)="editClicked.emit(link.id)"
+            matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
           <button mat-icon-button color="warn" (click)="deleteClicked.emit(link.id)"
             matTooltip="Eliminar">
             <mat-icon>delete_outline</mat-icon>
@@ -94,6 +98,7 @@ export class LinkCardComponent {
   @Input() showDelete = false;
 
   @Output() tagClicked = new EventEmitter<string>();
+  @Output() editClicked = new EventEmitter<string>();
   @Output() deleteClicked = new EventEmitter<string>();
 
   domain(url: string): string {

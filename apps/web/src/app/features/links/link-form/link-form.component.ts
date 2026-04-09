@@ -9,9 +9,11 @@ import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LinksService } from '../../../core/services/links.service';
+import { Link } from '../../../core/models/link.model';
 
 export interface LinkFormData {
   collectionId: string;
+  link?: Link;
 }
 
 @Component({
@@ -27,7 +29,7 @@ export interface LinkFormData {
     MatProgressSpinnerModule,
   ],
   template: `
-    <h2 mat-dialog-title>Añadir link</h2>
+    <h2 mat-dialog-title>{{ data.link ? 'Editar link' : 'Añadir link' }}</h2>
 
     <mat-dialog-content>
       <form [formGroup]="form" id="linkForm">
@@ -102,7 +104,13 @@ export class LinkFormComponent implements OnInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: LinkFormData) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    if (this.data.link) {
+      const { url, title, description, tags } = this.data.link;
+      this.form.patchValue({ url, title, description: description ?? '' });
+      this.tags.set(tags.map((t) => t.name));
+    }
+  }
 
   onUrlBlur() {
     const url = this.form.get('url')?.value?.trim();
@@ -141,17 +149,24 @@ export class LinkFormComponent implements OnInit {
     this.loading.set(true);
     const { url, title, description } = this.form.value;
 
-    this.linksService
-      .create({
-        url: url!,
-        title: title!,
-        description: description || undefined,
-        collectionId: this.data.collectionId,
-        tags: this.tags(),
-      })
-      .subscribe({
-        next: (link) => this.dialogRef.close(link),
-        error: () => this.loading.set(false),
-      });
+    const obs = this.data.link
+      ? this.linksService.update(this.data.link.id, {
+          url: url!,
+          title: title!,
+          description: description || undefined,
+          tags: this.tags(),
+        })
+      : this.linksService.create({
+          url: url!,
+          title: title!,
+          description: description || undefined,
+          collectionId: this.data.collectionId,
+          tags: this.tags(),
+        });
+
+    obs.subscribe({
+      next: (link) => this.dialogRef.close(link),
+      error: () => this.loading.set(false),
+    });
   }
 }

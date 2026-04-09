@@ -96,6 +96,21 @@ export class LinksService {
     return this.repo.save(link);
   }
 
+  async searchMine(ownerId: string, q: string) {
+    const term = `%${q.toLowerCase()}%`;
+    return this.repo
+      .createQueryBuilder('link')
+      .leftJoinAndSelect('link.tags', 'tag')
+      .leftJoinAndSelect('link.collection', 'collection')
+      .where('collection.ownerId = :ownerId', { ownerId })
+      .andWhere(
+        '(LOWER(link.title) LIKE :term OR LOWER(link.url) LIKE :term OR LOWER(tag.name) LIKE :term)',
+        { term },
+      )
+      .orderBy('link.createdAt', 'DESC')
+      .getMany();
+  }
+
   async fetchMeta(url: string): Promise<{ title: string; description: string }> {
     try {
       const res = await fetch(url, {

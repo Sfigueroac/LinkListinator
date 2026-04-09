@@ -81,6 +81,7 @@ import { LinkFormComponent } from '../../links/link-form/link-form.component';
                 [link]="link"
                 [showDelete]="isOwner()"
                 (tagClicked)="filterByTag($event)"
+                (editClicked)="openEditLink($event)"
                 (deleteClicked)="deleteLink($event)"
               />
             }
@@ -211,6 +212,18 @@ export class CollectionDetailComponent implements OnInit {
     });
     ref.afterClosed().subscribe((link) => {
       if (link) this.links.update((ls) => [link, ...ls]);
+    });
+  }
+
+  openEditLink(id: string) {
+    const link = this.links().find((l) => l.id === id);
+    if (!link) return;
+    const ref = this.dialog.open(LinkFormComponent, {
+      data: { collectionId: this.collection()!.id, link },
+      width: '500px',
+    });
+    ref.afterClosed().subscribe((updated) => {
+      if (updated) this.links.update((ls) => ls.map((l) => (l.id === updated.id ? updated : l)));
     });
   }
 

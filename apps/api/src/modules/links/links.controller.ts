@@ -40,6 +40,11 @@ export class LinksController {
     return this.linksService.search(tag ?? '');
   }
 
+  @Get('search-mine')
+  searchMine(@CurrentUser() user: { id: string }, @Query('q') q: string) {
+    return this.linksService.searchMine(user.id, q ?? '');
+  }
+
   @Get('meta')
   fetchMeta(@Query('url') url: string) {
     return this.linksService.fetchMeta(url ?? '');

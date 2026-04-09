@@ -7,6 +7,7 @@ export interface Link {
   description?: string;
   favicon?: string;
   collectionId: string;
+  collection?: { id: string; name: string };
   tags: Tag[];
   createdAt: string;
 }

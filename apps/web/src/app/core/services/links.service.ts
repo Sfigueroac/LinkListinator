@@ -21,6 +21,12 @@ export class LinksService {
     return this.api.get<Link[]>(`/links/search?tag=${tag}`).pipe(map((r) => r.data));
   }
 
+  searchMine(q: string) {
+    return this.api
+      .get<Link[]>(`/links/search-mine?q=${encodeURIComponent(q)}`)
+      .pipe(map((r) => r.data));
+  }
+
   fetchMeta(url: string) {
     return this.api
       .get<{ title: string; description: string }>(`/links/meta?url=${encodeURIComponent(url)}`)
