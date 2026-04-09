@@ -1,14 +1,15 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Collection } from '../../../core/models/collection.model';
 
 @Component({
   selector: 'app-collection-card',
-  imports: [RouterLink, MatCardModule, MatChipsModule, MatIconModule, MatButtonModule],
+  imports: [RouterLink, MatCardModule, MatChipsModule, MatIconModule, MatButtonModule, MatTooltipModule],
   template: `
     <mat-card class="collection-card" [routerLink]="['/collections', collection.id]">
       <div class="card-accent" [class.public]="collection.isPublic"></div>
@@ -38,6 +39,12 @@ import { Collection } from '../../../core/models/collection.model';
           </span>
         }
         <mat-icon class="arrow">chevron_right</mat-icon>
+        @if (showDelete) {
+          <button mat-icon-button color="warn" class="delete-btn"
+            (click)="onDelete($event)" matTooltip="Eliminar colección">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        }
       </mat-card-footer>
     </mat-card>
   `,
@@ -97,8 +104,16 @@ import { Collection } from '../../../core/models/collection.model';
       width: 20px;
       height: 20px;
     }
+    .delete-btn { margin-left: auto; }
   `],
 })
 export class CollectionCardComponent {
   @Input({ required: true }) collection!: Collection;
+  @Input() showDelete = false;
+  @Output() deleteClicked = new EventEmitter<string>();
+
+  onDelete(event: Event) {
+    event.stopPropagation();
+    this.deleteClicked.emit(this.collection.id);
+  }
 }

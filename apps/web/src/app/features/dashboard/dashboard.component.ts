@@ -4,10 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../../core/services/auth.service';
 import { CollectionsService } from '../../core/services/collections.service';
 import { Collection } from '../../core/models/collection.model';
 import { CollectionCardComponent } from '../../shared/components/collection-card/collection-card.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,6 +19,7 @@ import { CollectionCardComponent } from '../../shared/components/collection-card
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatDialogModule,
     CollectionCardComponent,
   ],
   template: `
@@ -47,7 +50,8 @@ import { CollectionCardComponent } from '../../shared/components/collection-card
       } @else {
         <div class="grid">
           @for (col of collections(); track col.id) {
-            <app-collection-card [collection]="col" />
+            <app-collection-card [collection]="col" [showDelete]="true"
+              (deleteClicked)="deleteCollection($event)" />
           }
         </div>
       }
@@ -91,6 +95,7 @@ export class DashboardComponent implements OnInit {
   auth = inject(AuthService);
   private collectionsService = inject(CollectionsService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   collections = signal<Collection[]>([]);
   loading = signal(true);
@@ -99,6 +104,21 @@ export class DashboardComponent implements OnInit {
     this.collectionsService.getMine().subscribe({
       next: (data) => { this.collections.set(data); this.loading.set(false); },
       error: () => this.loading.set(false),
+    });
+  }
+
+  deleteCollection(id: string) {
+    const col = this.collections().find((c) => c.id === id);
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: { message: `¿Eliminar "${col?.name}"? Se borrarán todos sus links.` },
+      width: '360px',
+    });
+    ref.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.collectionsService.delete(id).subscribe({
+        next: () => this.collections.update((cs) => cs.filter((c) => c.id !== id)),
+        error: () => this.snackBar.open('Error al eliminar', 'Cerrar', { duration: 3000 }),
+      });
     });
   }
 
